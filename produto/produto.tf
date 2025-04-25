@@ -8,11 +8,16 @@ provider "aws" {
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint
   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-
+  ## aws eks get-token --cluster-name eks-produto --region us-east-1 --output json teste manual
   exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
+    api_version = "client.authentication.k8s.io/v1" # ou v1beta1 se preferir
     command     = "aws"
-    args        = ["eks", "get-token", "--cluster-name", "eks-produto"]
+    args        = [
+      "eks", "get-token",
+      "--cluster-name", "eks-produto",
+      "--region", "us-east-1",
+      "--output", "json"
+    ]
   }
 }
 
@@ -256,7 +261,7 @@ resource "kubernetes_deployment" "microservice_produto" {
       spec {
         container {
           name  = "microservice-produto"
-          image = "740588470221.dkr.ecr.us-east-1.amazonaws.com/microservice_app:ms_produto"
+          image = "740588470221.dkr.ecr.us-east-1.amazonaws.com/app_concessionaria:microservice-produto"
 
           port {
             container_port = 3002
@@ -294,7 +299,7 @@ resource "kubernetes_deployment" "microservice_produto" {
           }
 
           env {
-            name  = "DOCDB_PORT"
+            name  = "DOCDB_DBPORT"
             value =  var.db_port
           }
 
